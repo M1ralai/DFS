@@ -6,7 +6,7 @@ import (
 	"github.com/M1ralai/DFS/master/internal/module/node/model"
 )
 
-type IRepository interface {
+type INodeCommRepository interface {
 	Save(model.Node) error
 	FindAll() ([]model.Node, error)
 	UpdateHearthbeat(model.Node) error

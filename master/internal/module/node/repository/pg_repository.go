@@ -11,7 +11,7 @@ type PostgresRepository struct {
 	db *sqlx.DB
 }
 
-func NewRepo(db *sqlx.DB) IRepository {
+func NewRepo(db *sqlx.DB) INodeCommRepository {
 	return &PostgresRepository{
 		db: db,
 	}

@@ -21,11 +21,11 @@ type INodeCommService interface {
 
 type NodeCommService struct {
 	master model.Master
-	repo   repository.IRepository
+	repo   repository.INodeCommRepository
 	cfg    config.NodeCommConfig
 }
 
-func NewNodeCommService(repo repository.IRepository, cfg config.NodeCommConfig) INodeCommService {
+func NewNodeCommService(repo repository.INodeCommRepository, cfg config.NodeCommConfig) INodeCommService {
 	return &NodeCommService{
 		master: model.Master{
 			Nodes:    make(map[string]*model.Node),
