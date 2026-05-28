@@ -1,9 +1,11 @@
 package dto
 
+import "github.com/google/uuid"
+
 type UploadRequest struct {
-	UserID   string `json:"user_id" validate:"required"`
-	FileName string `json:"filename" validate:"required"`
-	FileSize int64  `json:"file_size" validate:"required"`
+	UserID   uuid.UUID `json:"user_id" validate:"required"`
+	FileName string    `json:"filename" validate:"required"`
+	FileSize int64     `json:"file_size" validate:"required"`
 }
 
 type ChunkLocation struct {
@@ -21,13 +23,13 @@ type FileResponse struct {
 	FileID   string          `json:"file_id"`
 	FileName string          `json:"filename"`
 	Size     int64           `json:"size"`
-	UserID   string          `json:"user_id"`
+	UserID   uuid.UUID       `json:"user_id"`
 	Chunks   []ChunkLocation `json:"chunks"`
 }
 
 type DeleteRequest struct {
-	FileID string `json:"file_id" validate:"required"`
-	UserID string `json:"user_id" validate:"required"`
+	FileID string    `json:"file_id" validate:"required"`
+	UserID uuid.UUID `json:"user_id" validate:"required"`
 }
 
 type UserFilesResponse struct {

@@ -9,12 +9,14 @@ import (
 type NodeCommConfig struct {
 	NodeTimeout       time.Duration
 	ReplicationFactor int
+	ChunkSize         int64
 }
 
 func newNodeCommConfig() NodeCommConfig {
 	return NodeCommConfig{
 		NodeTimeout:       time.Duration(env.IntGetEnv("NODE_TIMEOUT", 5)) * time.Second,
 		ReplicationFactor: env.IntGetEnv("REPLICATION_FACTOR", 2),
+		ChunkSize:         int64(env.IntGetEnv("CHUNK_SIZE", 32)),
 	}
 }
 
@@ -42,7 +44,6 @@ type Config struct {
 	Port              string
 	Host              string
 	HeartbeatInterval time.Duration
-	ChunkSize         int // byte
 	NodeCommCfg       NodeCommConfig
 	DBCfg             DBConfig
 }
@@ -52,7 +53,6 @@ func LoadConfig() *Config {
 		Port:              env.GetEnv("PORT", ":3030"),
 		Host:              env.GetEnv("HOST", "0.0.0.0"),
 		HeartbeatInterval: time.Duration(env.IntGetEnv("HEARTHBEAT_INTERVAL", 5)) * time.Second,
-		ChunkSize:         env.IntGetEnv("CHUNK_SIZE", 32),
 		NodeCommCfg:       newNodeCommConfig(),
 		DBCfg:             newDBConfig(),
 	}
