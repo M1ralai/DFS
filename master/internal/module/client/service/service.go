@@ -86,7 +86,7 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 			return dto.UploadResponse{}, err
 		}
 
-		selectedNodes := make([]string, 0, rf)
+		selectedNodes := make([]uuid.UUID, 0, rf)
 		for range rf {
 			selectedNodes = append(selectedNodes, liveNodes[nodeIdx%len(liveNodes)].ID)
 			nodeIdx++
@@ -94,7 +94,7 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 
 		c := model.Chunk{
 			ID:     cID,
-			FileID: fID.String(),
+			FileID: fID,
 			Nodes:  selectedNodes,
 		}
 
@@ -121,24 +121,35 @@ func (s ClientService) GetFile(id uuid.UUID) (dto.FileResponse, error) {
 		return dto.FileResponse{}, err
 	}
 
-	// TODO: repository'de GetChunksByFileID yok,
-	_ = f // f.FileID kullanılarak chunk'lar çekilecek
+	chunks, err := s.repo.GetChunksByFileID(f.ID)
+	if err != nil {
+		return dto.FileResponse{}, err
+	}
+
+	chunkLocations := make([]dto.ChunkLocation, 0, len(chunks))
+	for _, c := range chunks {
+		chunkLocations = append(chunkLocations, dto.ChunkLocation{
+			ChunkID: c.ID,
+			Nodes:   c.Nodes,
+		})
+	}
 
 	return dto.FileResponse{
 		FileID:   f.ID,
 		FileName: f.FileName,
 		Size:     f.FileSize,
 		UserID:   f.UserID,
-		Chunks:   nil, // TODO: GetChunksByFileID eklendikten sonra doldur
+		Chunks:   chunkLocations,
 	}, nil
 }
 
-// TODO: önce chunk'ları silmesi gerekiyor — repository GetChunksByFileID + DeleteChunkByFileID eklenmeli.
 func (s ClientService) DeleteFile(req dto.DeleteRequest) error {
+	if err := s.repo.DeleteChunksByFileID(req.FileID); err != nil {
+		return err
+	}
 	if err := s.repo.DeleteFile(req.FileID); err != nil {
 		return err
 	}
-	// TODO: ilgili chunk'ları da sil — repository tamamlanınca eklenir
 	return nil
 }
 
@@ -151,12 +162,25 @@ func (s ClientService) GetUserFiles(userID uuid.UUID) (dto.UserFilesResponse, er
 
 	responses := make([]dto.FileResponse, 0, len(files))
 	for _, f := range files {
+		chunks, err := s.repo.GetChunksByFileID(f.ID)
+		if err != nil {
+			return dto.UserFilesResponse{}, err
+		}
+
+		chunkLocations := make([]dto.ChunkLocation, 0, len(chunks))
+		for _, c := range chunks {
+			chunkLocations = append(chunkLocations, dto.ChunkLocation{
+				ChunkID: c.ID,
+				Nodes:   c.Nodes,
+			})
+		}
+
 		responses = append(responses, dto.FileResponse{
 			FileID:   f.ID,
 			FileName: f.FileName,
 			Size:     f.FileSize,
 			UserID:   f.UserID,
-			Chunks:   nil, // TODO: GetChunksByFileID eklendikten sonra doldur
+			Chunks:   chunkLocations,
 		})
 	}
 

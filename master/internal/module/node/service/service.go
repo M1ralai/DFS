@@ -9,6 +9,7 @@ import (
 	"github.com/M1ralai/DFS/master/internal/module/node/repository"
 	"github.com/M1ralai/DFS/master/utils/config"
 	"github.com/gofiber/fiber/v3/log"
+	"github.com/google/uuid"
 )
 
 type INodeCommService interface {
@@ -28,9 +29,9 @@ type NodeCommService struct {
 func NewNodeCommService(repo repository.INodeCommRepository, cfg config.NodeCommConfig) INodeCommService {
 	return &NodeCommService{
 		master: model.Master{
-			Nodes:    make(map[string]*model.Node),
-			ChunkMap: make(map[string][]string),
-			AckCount: make(map[string]int),
+			Nodes:    make(map[uuid.UUID]*model.Node),
+			ChunkMap: make(map[uuid.UUID][]uuid.UUID),
+			AckCount: make(map[uuid.UUID]int),
 		},
 		repo: repo,
 		cfg:  cfg,

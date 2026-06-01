@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/M1ralai/DFS/master/internal/module/node/model"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -40,8 +41,8 @@ func (r *PostgresRepository) UpdateHearthbeat(n model.Node) error {
 	return nil
 }
 
-func (r *PostgresRepository) FindExpiredNode(t time.Duration) ([]string, error) {
-	v := new([]string)
+func (r *PostgresRepository) FindExpiredNode(t time.Duration) ([]uuid.UUID, error) {
+	v := new([]uuid.UUID)
 	if err := r.db.Select(v, `SELECT id FROM nodes
 WHERE last_hearthbeat < NOW() - $1::interval
 AND status != 'dead';`, int(t.Seconds())); err != nil {
@@ -50,7 +51,7 @@ AND status != 'dead';`, int(t.Seconds())); err != nil {
 	return *v, nil
 }
 
-func (r *PostgresRepository) MarkAsDead(id string) error {
+func (r *PostgresRepository) MarkAsDead(id uuid.UUID) error {
 	if _, err := r.db.Exec(`UPDATE nodes SET status = 'dead' WHERE id = $1`, id); err != nil {
 		return err
 	}

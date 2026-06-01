@@ -65,10 +65,17 @@ func (r ClientCommRepository) GetChunk(id uuid.UUID) (model.Chunk, error) {
 }
 
 func (r ClientCommRepository) GetChunksByFileID(id uuid.UUID) ([]model.Chunk, error) {
-	return nil, nil
+	v := make([]model.Chunk, 0)
+	if err := r.db.Select(&v, `SELECT * FROM chunks WHERE file_id = $1;`, id); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 func (r ClientCommRepository) DeleteChunksByFileID(id uuid.UUID) error {
+	if _, err := r.db.Exec(`DELETE FROM chunks WHERE file_id = $1;`, id); err != nil {
+		return err
+	}
 	return nil
 }
 

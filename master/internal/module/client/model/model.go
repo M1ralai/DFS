@@ -1,6 +1,9 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"github.com/M1ralai/DFS/master/utils/pg"
+	"github.com/google/uuid"
+)
 
 type File struct {
 	ID       uuid.UUID `db:"id"`
@@ -10,7 +13,7 @@ type File struct {
 }
 
 type Chunk struct {
-	ID     uuid.UUID `db:"id"`
-	FileID string    `db:"file_id"`
-	Nodes  []string  `db:"nodes"`
+	ID     uuid.UUID    `db:"id"`
+	FileID uuid.UUID    `db:"file_id"`
+	Nodes  pg.UUIDArray `db:"nodes"`
 }

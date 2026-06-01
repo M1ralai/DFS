@@ -9,8 +9,8 @@ type UploadRequest struct {
 }
 
 type ChunkLocation struct {
-	ChunkID uuid.UUID `json:"chunk_id"`
-	Nodes   []string  `json:"nodes"`
+	ChunkID uuid.UUID   `json:"chunk_id"`
+	Nodes   []uuid.UUID `json:"nodes"`
 }
 
 type UploadResponse struct {
