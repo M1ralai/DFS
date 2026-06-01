@@ -24,55 +24,55 @@ func (h *NodeCommHandler) RegisterRoute(app *fiber.App) {
 	app.Post("/api/acknowledgement", h.Acknowledgement)
 }
 
-func (h *NodeCommHandler) Save(ctx fiber.Ctx) {
+func (h *NodeCommHandler) Save(ctx fiber.Ctx) error {
 	dto := new(dto.NodeSaveRequest)
 	if err := ctx.Bind().Body(dto); err != nil {
 		ctx.Status(400).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	if err := h.service.Save(*dto); err != nil {
 		ctx.Status(500).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	ctx.Status(201).JSON("node succesfully registered")
-	return
+	return nil
 }
 
-func (h *NodeCommHandler) FindAll(ctx fiber.Ctx) {
+func (h *NodeCommHandler) FindAll(ctx fiber.Ctx) error {
 	v, err := h.service.FindAll()
 	if err != nil {
 		ctx.Status(500).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	ctx.Status(200).JSON(response.NewResponse(true, v, "tüm nodelar başarıyla getirildi"))
-	return
+	return nil
 
 }
 
-func (h *NodeCommHandler) HearthBeat(ctx fiber.Ctx) {
+func (h *NodeCommHandler) HearthBeat(ctx fiber.Ctx) error {
 	dto := new(dto.HearthBeatRequest)
 	if err := ctx.Bind().Body(dto); err != nil {
 		ctx.Status(400).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	if err := h.service.HearthBeat(*dto); err != nil {
 		ctx.Status(500).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	ctx.Status(200).JSON(response.NewResponse(true, 1, "hearthbeat basaiyla onaylandı"))
-	return
+	return nil
 }
 
-func (h *NodeCommHandler) Acknowledgement(ctx fiber.Ctx) {
+func (h *NodeCommHandler) Acknowledgement(ctx fiber.Ctx) error {
 	dto := new(dto.AckRequest)
 	if err := ctx.Bind().Body(dto); err != nil {
 		ctx.Status(400).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	if err := h.service.Acknowledgement(*dto); err != nil {
 		ctx.Status(500).JSON(response.NewResponse[any](false, nil, err.Error()))
-		return
+		return err
 	}
 	ctx.Status(200).JSON(response.NewResponse(true, 1, "acknowledgement basaiyla onaylandı"))
-	return
+	return nil
 }

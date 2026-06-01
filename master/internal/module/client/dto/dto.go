@@ -9,18 +9,18 @@ type UploadRequest struct {
 }
 
 type ChunkLocation struct {
-	ChunkID string   `json:"chunk_id"`
-	Nodes   []string `json:"nodes"`
+	ChunkID uuid.UUID `json:"chunk_id"`
+	Nodes   []string  `json:"nodes"`
 }
 
 type UploadResponse struct {
-	FileID  string          `json:"file_id"`
+	FileID  uuid.UUID       `json:"file_id"`
 	Chunks  []ChunkLocation `json:"chunks"`
 	Message string          `json:"message"`
 }
 
 type FileResponse struct {
-	FileID   string          `json:"file_id"`
+	FileID   uuid.UUID       `json:"file_id"`
 	FileName string          `json:"filename"`
 	Size     int64           `json:"size"`
 	UserID   uuid.UUID       `json:"user_id"`
@@ -28,7 +28,7 @@ type FileResponse struct {
 }
 
 type DeleteRequest struct {
-	FileID string    `json:"file_id" validate:"required"`
+	FileID uuid.UUID `json:"file_id" validate:"required"`
 	UserID uuid.UUID `json:"user_id" validate:"required"`
 }
 

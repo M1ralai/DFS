@@ -15,16 +15,22 @@ import (
 
 type IClientService interface {
 	UploadFile(dto.UploadRequest) (dto.UploadResponse, error)
+	GetFile(id uuid.UUID) (dto.FileResponse, error)
+	DeleteFile(req dto.DeleteRequest) error
+	GetUserFiles(userID uuid.UUID) (dto.UserFilesResponse, error)
 }
 
 type ClientService struct {
 	repo     ClientRepo.IClientCommRepository
 	nodeRepo NodeRepo.INodeCommRepository
-
-	cfg config.NodeCommConfig
+	cfg      config.NodeCommConfig
 }
 
-func NewClientService(clientRepo ClientRepo.IClientCommRepository, nodeRepo NodeRepo.INodeCommRepository, cfg config.NodeCommConfig) *ClientService {
+func NewClientService(
+	clientRepo ClientRepo.IClientCommRepository,
+	nodeRepo NodeRepo.INodeCommRepository,
+	cfg config.NodeCommConfig,
+) *ClientService {
 	return &ClientService{
 		repo:     clientRepo,
 		nodeRepo: nodeRepo,
@@ -53,8 +59,10 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 	}
 
 	if len(liveNodes) < s.cfg.ReplicationFactor {
-		return dto.UploadResponse{}, fmt.Errorf("yetersiz canlı node: %d live, %d gerekli (replication factor)",
-			len(liveNodes), s.cfg.ReplicationFactor)
+		return dto.UploadResponse{}, fmt.Errorf(
+			"yetersiz canlı node: %d live, %d gerekli (replication factor)",
+			len(liveNodes), s.cfg.ReplicationFactor,
+		)
 	}
 
 	f := model.File{
@@ -84,25 +92,73 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 			nodeIdx++
 		}
 
-		chunk := model.Chunk{
+		c := model.Chunk{
 			ID:     cID,
 			FileID: fID.String(),
 			Nodes:  selectedNodes,
 		}
 
-		if err := s.repo.PostChunk(chunk); err != nil {
+		if err := s.repo.PostChunk(c); err != nil {
 			return dto.UploadResponse{}, err
 		}
 
 		chunks = append(chunks, dto.ChunkLocation{
-			ChunkID: cID.String(),
+			ChunkID: cID,
 			Nodes:   selectedNodes,
 		})
 	}
 
 	return dto.UploadResponse{
-		FileID:  fID.String(),
+		FileID:  fID,
 		Chunks:  chunks,
 		Message: "upload organize edildi, client chunk'lari ilgili node'lara gondermeli",
 	}, nil
+}
+
+func (s ClientService) GetFile(id uuid.UUID) (dto.FileResponse, error) {
+	f, err := s.repo.GetFile(id)
+	if err != nil {
+		return dto.FileResponse{}, err
+	}
+
+	// TODO: repository'de GetChunksByFileID yok,
+	_ = f // f.FileID kullanılarak chunk'lar çekilecek
+
+	return dto.FileResponse{
+		FileID:   f.ID,
+		FileName: f.FileName,
+		Size:     f.FileSize,
+		UserID:   f.UserID,
+		Chunks:   nil, // TODO: GetChunksByFileID eklendikten sonra doldur
+	}, nil
+}
+
+// TODO: önce chunk'ları silmesi gerekiyor — repository GetChunksByFileID + DeleteChunkByFileID eklenmeli.
+func (s ClientService) DeleteFile(req dto.DeleteRequest) error {
+	if err := s.repo.DeleteFile(req.FileID); err != nil {
+		return err
+	}
+	// TODO: ilgili chunk'ları da sil — repository tamamlanınca eklenir
+	return nil
+}
+
+// GetUserFiles — kullanıcının tüm dosyalarını listeler.
+func (s ClientService) GetUserFiles(userID uuid.UUID) (dto.UserFilesResponse, error) {
+	files, err := s.repo.GetAllFileUser(userID)
+	if err != nil {
+		return dto.UserFilesResponse{}, err
+	}
+
+	responses := make([]dto.FileResponse, 0, len(files))
+	for _, f := range files {
+		responses = append(responses, dto.FileResponse{
+			FileID:   f.ID,
+			FileName: f.FileName,
+			Size:     f.FileSize,
+			UserID:   f.UserID,
+			Chunks:   nil, // TODO: GetChunksByFileID eklendikten sonra doldur
+		})
+	}
+
+	return dto.UserFilesResponse{Files: responses}, nil
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/M1ralai/DFS/master/internal/module/client/model"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,7 +25,7 @@ func (r ClientCommRepository) PostFile(f model.File) error {
 	return nil
 }
 
-func (r ClientCommRepository) GetFile(id string) (model.File, error) {
+func (r ClientCommRepository) GetFile(id uuid.UUID) (model.File, error) {
 	v := new(model.File)
 	if err := r.db.Get(v, `SELECT * FROM files WHERE id = $1 ;`, id); err != nil {
 		return model.File{}, err
@@ -32,7 +33,7 @@ func (r ClientCommRepository) GetFile(id string) (model.File, error) {
 	return *v, nil
 }
 
-func (r ClientCommRepository) GetAllFileUser(id string) ([]model.File, error) {
+func (r ClientCommRepository) GetAllFileUser(id uuid.UUID) ([]model.File, error) {
 	v := make([]model.File, 0)
 	if err := r.db.Select(&v, `SELECT * FROM files WHERE user_id = $1;`, id); err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func (r ClientCommRepository) GetAllFileUser(id string) ([]model.File, error) {
 	return v, nil
 }
 
-func (r ClientCommRepository) DeleteFile(id string) error {
+func (r ClientCommRepository) DeleteFile(id uuid.UUID) error {
 	if _, err := r.db.Exec(`DELETE FROM files WHERE id = $1 ;`, id); err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func (r ClientCommRepository) PostChunk(c model.Chunk) error {
 	return nil
 }
 
-func (r ClientCommRepository) GetChunk(id string) (model.Chunk, error) {
+func (r ClientCommRepository) GetChunk(id uuid.UUID) (model.Chunk, error) {
 	v := new(model.Chunk)
 	if err := r.db.Get(v, `SELECT * FROM chunks WHERE id = $1;`, id); err != nil {
 		return model.Chunk{}, err
@@ -63,7 +64,15 @@ func (r ClientCommRepository) GetChunk(id string) (model.Chunk, error) {
 	return *v, nil
 }
 
-func (r ClientCommRepository) DeleteChunk(id string) error {
+func (r ClientCommRepository) GetChunksByFileID(id uuid.UUID) ([]model.Chunk, error) {
+	return nil, nil
+}
+
+func (r ClientCommRepository) DeleteChunksByFileID(id uuid.UUID) error {
+	return nil
+}
+
+func (r ClientCommRepository) DeleteChunk(id uuid.UUID) error {
 	if _, err := r.db.Exec(`DELETE FROM chunks WHERE id = $1`, id); err != nil {
 		return err
 	}
