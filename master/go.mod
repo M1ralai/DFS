@@ -1,6 +1,6 @@
-module github.com/M1ralai/DFS/master
+module github.com/M1ralai/DFS
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/andybalholm/brotli v1.2.1 // indirect
