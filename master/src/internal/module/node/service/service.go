@@ -7,77 +7,75 @@ import (
 	"github.com/M1ralai/DFS/src/internal/module/node/dto"
 	"github.com/M1ralai/DFS/src/internal/module/node/model"
 	"github.com/M1ralai/DFS/src/internal/module/node/repository"
+	ClientRepo "github.com/M1ralai/DFS/src/internal/module/client/repository"
 	"github.com/M1ralai/DFS/src/utils/config"
 	"github.com/gofiber/fiber/v3/log"
-	"github.com/google/uuid"
 )
 
-type INodeCommService interface {
+type INodeService interface {
 	Save(dto.NodeSaveRequest) error
 	FindAll() ([]model.Node, error)
-	HearthBeat(dto.HearthBeatRequest) error
+	Heartbeat(dto.HeartbeatRequest) error
 	Acknowledgement(dto.AckRequest) error
 	StartDeadNodeChecker(ctx context.Context)
 }
 
-type NodeCommService struct {
-	master model.Master
-	repo   repository.INodeCommRepository
-	cfg    config.NodeCommConfig
+type NodeService struct {
+	repo       repository.INodeRepository
+	clientRepo ClientRepo.IClientRepository
+	cfg        config.NodeConfig
 }
 
-func NewNodeCommService(repo repository.INodeCommRepository, cfg config.NodeCommConfig) INodeCommService {
-	return &NodeCommService{
-		master: model.Master{
-			Nodes:    make(map[uuid.UUID]*model.Node),
-			ChunkMap: make(map[uuid.UUID][]uuid.UUID),
-			AckCount: make(map[uuid.UUID]int),
-		},
-		repo: repo,
-		cfg:  cfg,
+func NewNodeService(repo repository.INodeRepository, clientRepo ClientRepo.IClientRepository, cfg config.NodeConfig) INodeService {
+	return &NodeService{
+		repo:       repo,
+		clientRepo: clientRepo,
+		cfg:        cfg,
 	}
 }
 
-func (s *NodeCommService) Save(node dto.NodeSaveRequest) error {
+func (s *NodeService) Save(node dto.NodeSaveRequest) error {
 	n := model.Node{
 		ID:             node.ID,
 		AvailableSpace: node.AvailableSpace,
 		Status:         model.StatusLive,
-		LastHearthbeat: time.Now(),
+		LastHeartbeat:  time.Now(),
 		Chunks:         node.Chunks,
 	}
 	return s.repo.Save(n)
 }
 
-func (s *NodeCommService) FindAll() ([]model.Node, error) {
+func (s *NodeService) FindAll() ([]model.Node, error) {
 	return s.repo.FindAll()
 }
 
-func (s *NodeCommService) HearthBeat(req dto.HearthBeatRequest) error {
+func (s *NodeService) Heartbeat(req dto.HeartbeatRequest) error {
 	n := model.Node{
-		ID:             req.NodeId,
+		ID:             req.ID,
 		AvailableSpace: req.AvailableSpace,
 	}
-	return s.repo.UpdateHearthbeat(n)
+	return s.repo.UpdateHeartbeat(n)
 }
 
-func (s *NodeCommService) Acknowledgement(req dto.AckRequest) error {
+func (s *NodeService) Acknowledgement(req dto.AckRequest) error {
 	n := model.Node{
-		ID:             req.NodeId,
+		ID:             req.ID,
 		AvailableSpace: req.AvailableSpace,
 	}
-	if err := s.repo.UpdateHearthbeat(n); err != nil {
+	if err := s.repo.UpdateHeartbeat(n); err != nil {
 		return err
 	}
-	s.master.AckCount[req.ChunkId] += 1
-	if s.master.AckCount[req.ChunkId] == s.cfg.ReplicationFactor {
-		delete(s.master.AckCount, req.ChunkId)
-		log.Infow("chunk fully replicated", "chunkID", req.ChunkId)
+	count, err := s.clientRepo.IncrementReplicaCount(req.ChunkID)
+	if err != nil {
+		return err
+	}
+	if count >= s.cfg.ReplicationFactor {
+		log.Infow("chunk fully replicated", "chunkID", req.ChunkID, "replica_count", count)
 	}
 	return nil
 }
 
-func (s *NodeCommService) StartDeadNodeChecker(ctx context.Context) {
+func (s *NodeService) StartDeadNodeChecker(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(s.cfg.NodeTimeout)
 		for {

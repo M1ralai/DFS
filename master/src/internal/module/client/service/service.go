@@ -21,16 +21,12 @@ type IClientService interface {
 }
 
 type ClientService struct {
-	repo     ClientRepo.IClientCommRepository
-	nodeRepo NodeRepo.INodeCommRepository
-	cfg      config.NodeCommConfig
+	repo     ClientRepo.IClientRepository
+	nodeRepo NodeRepo.INodeRepository
+	cfg      config.NodeConfig
 }
 
-func NewClientService(
-	clientRepo ClientRepo.IClientCommRepository,
-	nodeRepo NodeRepo.INodeCommRepository,
-	cfg config.NodeCommConfig,
-) *ClientService {
+func NewClientService(clientRepo ClientRepo.IClientRepository, nodeRepo NodeRepo.INodeRepository, cfg config.NodeConfig) IClientService {
 	return &ClientService{
 		repo:     clientRepo,
 		nodeRepo: nodeRepo,
@@ -38,7 +34,7 @@ func NewClientService(
 	}
 }
 
-func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, error) {
+func (s *ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, error) {
 	fID, err := uuid.NewUUID()
 	if err != nil {
 		return dto.UploadResponse{}, err
@@ -80,7 +76,7 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 	chunks := make([]dto.ChunkLocation, 0, chunkCount)
 	nodeIdx := 0
 
-	for range chunkCount {
+	for i := range chunkCount {
 		cID, err := uuid.NewUUID()
 		if err != nil {
 			return dto.UploadResponse{}, err
@@ -93,9 +89,10 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 		}
 
 		c := model.Chunk{
-			ID:     cID,
-			FileID: fID,
-			Nodes:  selectedNodes,
+			ID:         cID,
+			FileID:     fID,
+			ChunkIndex: i,
+			Nodes:      selectedNodes,
 		}
 
 		if err := s.repo.PostChunk(c); err != nil {
@@ -115,7 +112,7 @@ func (s ClientService) UploadFile(req dto.UploadRequest) (dto.UploadResponse, er
 	}, nil
 }
 
-func (s ClientService) GetFile(id uuid.UUID) (dto.FileResponse, error) {
+func (s *ClientService) GetFile(id uuid.UUID) (dto.FileResponse, error) {
 	f, err := s.repo.GetFile(id)
 	if err != nil {
 		return dto.FileResponse{}, err
@@ -143,7 +140,7 @@ func (s ClientService) GetFile(id uuid.UUID) (dto.FileResponse, error) {
 	}, nil
 }
 
-func (s ClientService) DeleteFile(req dto.DeleteRequest) error {
+func (s *ClientService) DeleteFile(req dto.DeleteRequest) error {
 	if err := s.repo.DeleteChunksByFileID(req.FileID); err != nil {
 		return err
 	}
@@ -154,7 +151,7 @@ func (s ClientService) DeleteFile(req dto.DeleteRequest) error {
 }
 
 // GetUserFiles — kullanıcının tüm dosyalarını listeler.
-func (s ClientService) GetUserFiles(userID uuid.UUID) (dto.UserFilesResponse, error) {
+func (s *ClientService) GetUserFiles(userID uuid.UUID) (dto.UserFilesResponse, error) {
 	files, err := s.repo.GetAllFileUser(userID)
 	if err != nil {
 		return dto.UserFilesResponse{}, err

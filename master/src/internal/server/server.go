@@ -6,10 +6,18 @@ import (
 
 	"github.com/M1ralai/DFS/src/internal/infrastructure/db"
 	nodeHandler "github.com/M1ralai/DFS/src/internal/module/node/handler"
-	nodeRespository "github.com/M1ralai/DFS/src/internal/module/node/repository"
+	nodeRepository "github.com/M1ralai/DFS/src/internal/module/node/repository"
 	nodeService "github.com/M1ralai/DFS/src/internal/module/node/service"
+
+	clientHandler "github.com/M1ralai/DFS/src/internal/module/client/handler"
+	clientRepository "github.com/M1ralai/DFS/src/internal/module/client/repository"
+	clientService "github.com/M1ralai/DFS/src/internal/module/client/service"
+
+	_ "github.com/M1ralai/DFS/src/docs"
+
 	"github.com/M1ralai/DFS/src/utils/config"
 	"github.com/M1ralai/DFS/src/utils/validator"
+	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -39,16 +47,22 @@ func (s *Server) Run() {
 		log.Fatal("db migration is failed.", err)
 	}
 
-	nodeRepo := nodeRespository.NewRepo(DB)
-	nodeSrv := nodeService.NewNodeCommService(nodeRepo, s.cfg.NodeCommCfg)
+	clientRepo := clientRepository.NewClientRepository(DB)
+	nodeRepo := nodeRepository.NewNodeRepository(DB)
+	nodeSrv := nodeService.NewNodeService(nodeRepo, clientRepo, s.cfg.NodeCfg)
+	clientSrv := clientService.NewClientService(clientRepo, nodeRepo, s.cfg.NodeCfg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	nodeSrv.StartDeadNodeChecker(ctx)
 
-	nodeHnd := nodeHandler.NewNodeCommHandler(nodeSrv)
+	nodeHnd := nodeHandler.NewNodeHandler(nodeSrv)
+	clientHnd := clientHandler.NewClientHandler(clientSrv)
+
+	s.app.Get("/swagger/*", swaggo.New())
 
 	nodeHnd.RegisterRoute(s.app)
+	clientHnd.RegisterRoute(s.app)
 
 	s.app.Listen(s.cfg.Host + s.cfg.Port)
 

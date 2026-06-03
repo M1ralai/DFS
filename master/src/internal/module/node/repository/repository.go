@@ -7,10 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type INodeCommRepository interface {
+type INodeRepository interface {
 	Save(model.Node) error
 	FindAll() ([]model.Node, error)
-	UpdateHearthbeat(model.Node) error
+	UpdateHeartbeat(model.Node) error
 	FindExpiredNode(time.Duration) ([]uuid.UUID, error)
 	MarkAsDead(id uuid.UUID) error
 }

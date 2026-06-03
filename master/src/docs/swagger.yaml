@@ -1,0 +1,402 @@
+basePath: /
+definitions:
+  github_com_M1ralai_DFS_src_internal_module_client_dto.ChunkLocation:
+    properties:
+      chunk_id:
+        type: string
+      nodes:
+        items:
+          type: string
+        type: array
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_client_dto.DeleteRequest:
+    properties:
+      file_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - file_id
+    - user_id
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_client_dto.FileResponse:
+    properties:
+      chunks:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.ChunkLocation'
+        type: array
+      file_id:
+        type: string
+      filename:
+        type: string
+      size:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_client_dto.UploadRequest:
+    properties:
+      file_size:
+        type: integer
+      filename:
+        type: string
+      user_id:
+        type: string
+    required:
+    - file_size
+    - filename
+    - user_id
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_client_dto.UploadResponse:
+    properties:
+      chunks:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.ChunkLocation'
+        type: array
+      file_id:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_client_dto.UserFilesResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.FileResponse'
+        type: array
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_node_dto.AckRequest:
+    properties:
+      available_space:
+        type: integer
+      chunk_id:
+        type: string
+      id:
+        type: string
+    required:
+    - available_space
+    - chunk_id
+    - id
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_node_dto.HeartbeatRequest:
+    properties:
+      available_space:
+        type: integer
+      node_id:
+        type: string
+    required:
+    - available_space
+    - node_id
+    type: object
+  github_com_M1ralai_DFS_src_internal_module_node_dto.NodeSaveRequest:
+    properties:
+      available_space:
+        type: integer
+      chunks:
+        items:
+          type: string
+        type: array
+      node_id:
+        type: string
+    required:
+    - available_space
+    - chunks
+    - node_id
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-any:
+    properties:
+      data: {}
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-array_github_com_M1ralai_DFS_src_internal_module_node_dto_NodeSaveRequest:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_node_dto.NodeSaveRequest'
+        type: array
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_FileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.FileResponse'
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_UploadResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.UploadResponse'
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_UserFilesResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.UserFilesResponse'
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-int:
+    properties:
+      data:
+        type: integer
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_M1ralai_DFS_src_utils_response.Response-string:
+    properties:
+      data:
+        type: string
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+host: localhost:3030
+info:
+  contact: {}
+  description: 'Distributed File System master service: node orchestration ve client
+    metadata yönetimi.'
+  title: DFS Master API
+  version: "1.0"
+paths:
+  /api/acknowledgement:
+    post:
+      consumes:
+      - application/json
+      description: Node bir chunk'ı başarıyla kaydettiğinde master'a bildirir. Replica
+        sayacı artırılır.
+      parameters:
+      - description: Ack bilgileri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_node_dto.AckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-int'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Chunk ack al
+      tags:
+      - node
+  /api/file:
+    delete:
+      consumes:
+      - application/json
+      description: Verilen file_id'ye sahip dosyayı ve tüm chunk'larını siler.
+      parameters:
+      - description: Silme isteği
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-int'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Dosyayı sil
+      tags:
+      - client
+  /api/file/{id}:
+    get:
+      description: Verilen file_id için dosya bilgisi ve chunk placement'ı döner.
+      parameters:
+      - description: File UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_FileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Dosya metadata getir
+      tags:
+      - client
+  /api/heartbeat:
+    post:
+      consumes:
+      - application/json
+      description: Node'dan periyodik heartbeat alır, son görülme zamanını ve available
+        space'i günceller.
+      parameters:
+      - description: Heartbeat bilgileri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_node_dto.HeartbeatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-int'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Node heartbeat al
+      tags:
+      - node
+  /api/node:
+    get:
+      description: Master'a kayıtlı tüm node'ları döner.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-array_github_com_M1ralai_DFS_src_internal_module_node_dto_NodeSaveRequest'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Tüm node'ları listele
+      tags:
+      - node
+    post:
+      consumes:
+      - application/json
+      description: Bir storage node'unu master'a kaydeder.
+      parameters:
+      - description: Node kayıt bilgileri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_node_dto.NodeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Yeni node kaydet
+      tags:
+      - node
+  /api/upload:
+    post:
+      consumes:
+      - application/json
+      description: Bir dosya için chunk placement üretir. Hangi chunk'ın hangi node'lara
+        yazılacağını döner.
+      parameters:
+      - description: Yüklenecek dosya bilgileri
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_DFS_src_internal_module_client_dto.UploadRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_UploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Dosya yükleme planı oluştur
+      tags:
+      - client
+  /api/user/{user_id}/files:
+    get:
+      description: Verilen user_id'ye ait tüm dosyaları ve chunk placement'larını
+        döner.
+      parameters:
+      - description: User UUID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-github_com_M1ralai_DFS_src_internal_module_client_dto_UserFilesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_DFS_src_utils_response.Response-any'
+      summary: Kullanıcının dosyalarını listele
+      tags:
+      - client
+swagger: "2.0"

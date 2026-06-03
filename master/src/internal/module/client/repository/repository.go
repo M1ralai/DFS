@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type IClientCommRepository interface {
+type IClientRepository interface {
 	PostFile(f model.File) error
 	GetFile(id uuid.UUID) (model.File, error)
 	GetAllFileUser(id uuid.UUID) ([]model.File, error)
@@ -16,4 +16,6 @@ type IClientCommRepository interface {
 	GetChunksByFileID(id uuid.UUID) ([]model.Chunk, error)
 	DeleteChunksByFileID(id uuid.UUID) error
 	DeleteChunk(id uuid.UUID) error
+
+	IncrementReplicaCount(chunkID uuid.UUID) (int, error)
 }

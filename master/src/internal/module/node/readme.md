@@ -1,10 +1,10 @@
 endpointler:
-                //her node belli aralıklarla (env da tanımlı) hearthbeat atmalı
-                //bu heartheat belli süre içerisinde gelmzse (env da tanımlı)
+                //her node belli aralıklarla (env da tanımlı) heartbeat atmalı
+                //bu heartbeat belli süre içerisinde gelmezse (env da tanımlı)
                 //node ölü kabul edilecek
                 //içerisinde node-id bulunacak
                 //içerisinde available space bulunacak
-    /hearthbeat
+    /heartbeat
 
                 //her node ilk bağlanmada mastera ben buradayım şeklinde bir
                 //register göndermeli

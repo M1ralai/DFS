@@ -13,7 +13,9 @@ type File struct {
 }
 
 type Chunk struct {
-	ID     uuid.UUID    `db:"id"`
-	FileID uuid.UUID    `db:"file_id"`
-	Nodes  pg.UUIDArray `db:"nodes"`
+	ID           uuid.UUID    `db:"id"`
+	FileID       uuid.UUID    `db:"file_id"`
+	ChunkIndex   int          `db:"chunk_index"`
+	Nodes        pg.UUIDArray `db:"nodes"`
+	ReplicaCount int          `db:"replica_count"`
 }

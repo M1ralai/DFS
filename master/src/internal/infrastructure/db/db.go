@@ -16,6 +16,12 @@ func NewPostgresDB(cfg config.DBConfig) (*sqlx.DB, error) {
 
 func Migrate(db *sqlx.DB, isDebug bool) error {
 	if isDebug {
+		if _, err := db.Exec(`DROP TABLE IF EXISTS chunks`); err != nil {
+			return err
+		}
+		if _, err := db.Exec(`DROP TABLE IF EXISTS files`); err != nil {
+			return err
+		}
 		if _, err := db.Exec(`DROP TABLE IF EXISTS nodes`); err != nil {
 			return err
 		}
@@ -24,9 +30,31 @@ func Migrate(db *sqlx.DB, isDebug bool) error {
     id VARCHAR PRIMARY KEY,
     available_space INTEGER,
     status VARCHAR,
-    last_hearthbeat TIMESTAMP,
+    last_heartbeat TIMESTAMP,
     chunks TEXT[]
 );
+`); err != nil {
+		return err
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS files (
+    id VARCHAR PRIMARY KEY,
+    user_id VARCHAR NOT NULL,
+    filename TEXT NOT NULL,
+    size BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+`); err != nil {
+		return err
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS chunks (
+    id VARCHAR PRIMARY KEY,
+    file_id VARCHAR NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    chunk_index INTEGER NOT NULL,
+    nodes TEXT[] NOT NULL,
+    replica_count INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(file_id, chunk_index)
+);
+CREATE INDEX IF NOT EXISTS idx_chunks_file_id ON chunks(file_id);
 `); err != nil {
 		return err
 	}

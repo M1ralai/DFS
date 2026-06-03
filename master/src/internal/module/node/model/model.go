@@ -19,12 +19,6 @@ type Node struct {
 	ID             uuid.UUID    `db:"id"`
 	AvailableSpace int          `db:"available_space"`
 	Status         NodeStatus   `db:"status"`
-	LastHearthbeat time.Time    `db:"last_hearthbeat"`
+	LastHeartbeat  time.Time    `db:"last_heartbeat"`
 	Chunks         pg.UUIDArray `db:"chunks"`
-}
-
-type Master struct {
-	Nodes    map[uuid.UUID]*Node
-	ChunkMap map[uuid.UUID][]uuid.UUID
-	AckCount map[uuid.UUID]int
 }
