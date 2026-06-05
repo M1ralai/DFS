@@ -4,16 +4,23 @@ import (
 	"time"
 
 	"github.com/M1ralai/DFS/node/src/utils/env"
+	"github.com/google/uuid"
 )
 
 type NodeConfig struct {
+	NodeID            uuid.UUID
 	NodeTimeout       time.Duration
 	ReplicationFactor int
 	ChunkSize         int64
 }
 
 func newNodeConfig() NodeConfig {
+	id, err := uuid.NewUUID()
+	if err != nil {
+		panic(err)
+	}
 	return NodeConfig{
+		NodeID:            id,
 		NodeTimeout:       time.Duration(env.IntGetEnv("NODE_TIMEOUT", 5)) * time.Second,
 		ReplicationFactor: env.IntGetEnv("REPLICATION_FACTOR", 2),
 		ChunkSize:         int64(env.IntGetEnv("CHUNK_SIZE", 32)),
@@ -40,24 +47,44 @@ func newDBConfig() DBConfig {
 	}
 }
 
+type ServerConfig struct {
+	Port string
+	Host string
+}
+
+func newServerConfig() ServerConfig {
+	return ServerConfig{
+		Port: env.GetEnv("PORT", ":4040"),
+		Host: env.GetEnv("HOST", "0.0.0.0"),
+	}
+}
+
+type MasterConfig struct {
+	MasterURL string
+}
+
+func newMasterConfig() MasterConfig {
+	return MasterConfig{
+		MasterURL: env.GetEnv("MASTER_URL", "http://localhost:3030"),
+	}
+}
+
 type Config struct {
-	Port              string
-	Host              string
 	HeartbeatInterval time.Duration
 	NodeCfg           NodeConfig
 	DBCfg             DBConfig
+	ServerCfg         ServerConfig
+	MasterCfg         MasterConfig
 	StorageDir        string
-	MasterURL         string
 }
 
 func LoadConfig() *Config {
 	return &Config{
-		Port:              env.GetEnv("PORT", ":4040"),
-		Host:              env.GetEnv("HOST", "0.0.0.0"),
 		HeartbeatInterval: time.Duration(env.IntGetEnv("HEARTBEAT_INTERVAL", 5)) * time.Second,
 		NodeCfg:           newNodeConfig(),
 		DBCfg:             newDBConfig(),
+		ServerCfg:         newServerConfig(),
+		MasterCfg:         newMasterConfig(),
 		StorageDir:        env.GetEnv("STORAGE_DIR", "./data/chunks"),
-		MasterURL:         env.GetEnv("MASTER_URL", "http://localhost:3030"),
 	}
 }

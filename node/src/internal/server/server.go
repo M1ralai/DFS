@@ -40,5 +40,5 @@ func (s *Server) Run() {
 		return c.Status(200).JSON(response.NewResponse(true, "node is alive", ""))
 	})
 
-	s.app.Listen(s.cfg.Host + s.cfg.Port)
+	s.app.Listen(s.cfg.ServerCfg.Host + s.cfg.ServerCfg.Port)
 }
